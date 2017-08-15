@@ -40,14 +40,14 @@ namespace Sensorhub
         bool testRunning = false;
 
         //ports from the different applications
-        int penPort = 11003;
+        int penPort = 11001;
         int myoPort = 11002;
-        int testPort = 11001;
+        int testPort = 11003;
 
         //strings for the files of the different applications
-        string penStringFile = "penApp";
+        string penStringFile = "PenCalligraphyWpf";
         string testStringFile = "socketTest";
-        string myoStringFile = "MyoApp";
+        string myoStringFile = "MyoTest";
 
         //strings for the different applications
         string penString = "";
@@ -100,16 +100,17 @@ namespace Sensorhub
         {
             while(isStoring)
             {
-                if(penString!=penStringTemp|| myoString!=myoStringTemp || testString != testStringTemp)
-                {
+                //if(penString!=penStringTemp|| myoString!=myoStringTemp || testString != testStringTemp)
+                //{
                     double now = DateTime.Now.TimeOfDay.TotalMilliseconds;
-                    storingString = "<" + now + ">" +
+                    storingString = storingString + "<" + now + ">" +
                         "<pen>" + penString + "</pen>" + "<myo>" + myoString + "</myo>" 
-                        + "<test>" + testString + "</test></"+now+">\n";
+                        + "<test>" + testString + "</test></"+now+">"+Environment.NewLine;
                     penStringTemp = penString;
                     myoStringTemp = myoString;
                     testStringTemp = testString;
-                }
+                //}
+                Thread.Sleep(17);
                 
             }
         }
