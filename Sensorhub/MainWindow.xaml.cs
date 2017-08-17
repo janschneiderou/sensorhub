@@ -282,7 +282,7 @@ namespace Sensorhub
                     string returnData = Encoding.ASCII.GetString(receiveBytes);
 
                     Console.WriteLine("This is the message you received " +
-                                                 returnData.ToString());
+                                                 returnData);
 
                     penString = returnData.ToString();
                 }
