@@ -15,6 +15,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Google.Cloud.PubSub.V1;
+using Google.Protobuf;
+using Google.Cloud.Storage;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Services;
+using Google.Cloud.Storage.V1;
+using System.IO;
 
 namespace Sensorhub
 {
@@ -39,6 +46,11 @@ namespace Sensorhub
         bool penRunning = false;
         bool testRunning = false;
 
+        bool penNew = false;
+        bool myoNew=false;
+        bool testNew = false;
+        bool firstTime = true;
+
         //ports from the different applications
         int penPort = 11001;
         int myoPort = 11002;
@@ -57,7 +69,12 @@ namespace Sensorhub
         string myoStringTemp = "";
         string testStringTemp = "";
 
+        string fileName = "";
+
         string storingString = "";
+
+        string startString = "";
+        string endString = "";
 
         public MainWindow()
         {
@@ -100,16 +117,54 @@ namespace Sensorhub
         {
             while(isStoring)
             {
-                //if(penString!=penStringTemp|| myoString!=myoStringTemp || testString != testStringTemp)
-                //{
+                if (penNew == true || myoNew == true || testNew ==true)
+                {
                     double now = DateTime.Now.TimeOfDay.TotalMilliseconds;
-                    storingString = storingString + "<" + now + ">" +
-                        "<pen>" + penString + "</pen>" + "<myo>" + myoString + "</myo>" 
-                        + "<test>" + testString + "</test></"+now+">"+Environment.NewLine;
-                    penStringTemp = penString;
-                    myoStringTemp = myoString;
-                    testStringTemp = testString;
-                //}
+                    bool thereIsSomething = false;
+                    if (firstTime==true)
+                    {
+                        
+                        storingString = storingString + "{ \"Timestamp\":\"" + now + "\",\"Sensors\":[{";
+                        firstTime = false;
+                    }
+                    else
+                    {
+                        storingString = storingString + ",{ \"Timestamp\":\"" + now + "\",\"Sensors\":[{";
+                    }
+                    
+                    if (penNew==true)
+                    {
+                        if(thereIsSomething==true)
+                        {
+                            storingString = storingString + ",";
+                        }
+                        penNew = false;
+                        storingString = storingString + penString;
+                        thereIsSomething = true;
+                    }
+                    if (myoNew==true)
+                    {
+                        if (thereIsSomething == true)
+                        {
+                            storingString = storingString + ",";
+                        }
+                        storingString = storingString + myoString;
+                        myoNew = false;
+                    }
+                    if(testNew==true)
+                    {
+                        if (thereIsSomething == true)
+                        {
+                            storingString = storingString + ",";
+                        }
+                        storingString = storingString + testString;
+                        testNew = false;
+                    }
+                    storingString = storingString + " }]}"+ Environment.NewLine;
+                        
+           
+                        
+                }
                 Thread.Sleep(17);
                 
             }
@@ -119,6 +174,9 @@ namespace Sensorhub
         {
             try
             {
+                //  storingThread.Abort();
+
+                
                 isStoring = false;
                 myoRunning = false;
                 penRunning = false;
@@ -127,19 +185,111 @@ namespace Sensorhub
                 closePen();
                 closeMyo();
                 saveString();
-
+              //  googleCloudSave();
+              //  googleCloudBucket();
 
             }
             catch (Exception xx)
             {
-                Console.WriteLine(xx);
+                Console.WriteLine("I got an exception after the stop click" + xx);
             }
         }
+
+        private void googleCloudBucket()
+        {
+            // Your Google Cloud Platform project ID.
+            string projectId = "dojo-ibl";
+
+
+            // Instantiates a client.
+            StorageClient storageClient = StorageClient.Create();
+
+            // The name for the new bucket.
+            string bucketName =  "test-pipeline-plumbers";
+            try
+            {
+                // Creates the new bucket.
+                //  storageClient.CreateBucket(projectId, bucketName);
+                
+                string path = Directory.GetCurrentDirectory();
+                path = path + "\\" + fileName;
+                
+                using (var fileStream = File.OpenRead(path))
+                {
+                    path = path + "\\" + fileName;
+                    string objectName = System.IO.Path.GetFileName(path);
+
+                    storageClient.UploadObject(bucketName, objectName, null, fileStream);
+                    Console.WriteLine($" file {fileName} send to Bucket {bucketName} ");
+                }
+
+               
+            }
+            catch (Google.GoogleApiException e)
+            when (e.Error.Code == 409)
+            {
+                // The bucket already exists.  That's fine.
+                Console.WriteLine(e.Error.Message);
+            }
+        }
+
+        private async void googleCloudSave()
+        {
+
+            //GoogleCredential credential = await GoogleCredential.GetApplicationDefaultAsync();
+
+            //var compute = new ComputeService(new BaseClientService.Initializer()
+            //{
+            //    HttpClientInitializer = credential
+            //});
+
+            //if (credential.IsCreateScopedRequired)
+            //{
+            //    credential = credential.CreateScoped(new[] { ComputeService.Scope.CloudPlatform, ComputeService.Scope.Compute });
+            //}
+            // Instantiates a client
+            PublisherClient publisher = PublisherClient.Create();
+
+            TopicName topicName = new TopicName("dojo-ibl", "new_tweets");
+            PubsubMessage message = new PubsubMessage
+            {
+                // The data is any arbitrary ByteString. Here, we're using text.
+                Data = ByteString.CopyFromUtf8(storingString),
+                // The attributes provide metadata in a string-to-string 
+                // dictionary.
+                Attributes =
+                    {
+                        { "fubar", "fuckedupbeyondallrecognition" }
+                        }
+            };
+            
+           try
+           {
+              publisher.Publish(topicName, new[] { message });
+           }
+          catch(Exception x)
+          {
+                Console.WriteLine("Hello!!!." + x);
+          }
+            Console.WriteLine("Topic message created.");
+
+
+        }
+        
 
         private void saveString()
         {
             double now = DateTime.Now.TimeOfDay.TotalMilliseconds;
-            System.IO.File.WriteAllText(now+".txt", storingString);
+            fileName = now + ".txt";
+            startString = "{\"idSensorFile\":\"" + fileName + "\",\"SensorUpdates\":[{"+Environment.NewLine;
+            endString = Environment.NewLine+"}]}";
+            storingString = startString + storingString + endString;
+
+
+            System.IO.File.WriteAllText(fileName, storingString);
+            
+
+
             
         }
 
@@ -200,12 +350,13 @@ namespace Sensorhub
         {
             try
             {
+                myoThread.Abort();
                 System.Diagnostics.Process[] pp1 = System.Diagnostics.Process.GetProcessesByName(myoStringFile);
                 pp1[0].CloseMainWindow();
             }
-            catch
+            catch (Exception xx)
             {
-
+                Console.WriteLine("I got an exception after closing Myo" + xx);
             }
             
         }
@@ -214,12 +365,14 @@ namespace Sensorhub
         {
             try
             {
+                penThread.Abort();
+               
                 System.Diagnostics.Process[] pp1 = System.Diagnostics.Process.GetProcessesByName(penStringFile);
                 pp1[0].CloseMainWindow();
             }
-            catch
+            catch (Exception xx)
             {
-
+                Console.WriteLine("I got an exception after closing Pen" + xx);
             }
             
         }
@@ -231,9 +384,9 @@ namespace Sensorhub
                 System.Diagnostics.Process[] pp1 = System.Diagnostics.Process.GetProcessesByName(testStringFile);
                 pp1[0].CloseMainWindow();
             }
-            catch
+            catch(Exception xx)
             {
-
+                Console.WriteLine("I got an exception after closing Myo" + xx);
             }
             
         }
@@ -259,10 +412,11 @@ namespace Sensorhub
                     Console.WriteLine("This is the message you received " +
                                                  returnData);
                     testString = returnData;
+                    testNew = true;
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.ToString());
+                    Console.WriteLine("I got an exception in the test thread" + e.ToString());
                 }
             }
         }
@@ -286,11 +440,12 @@ namespace Sensorhub
                                                  returnData);
 
                     penString = returnData.ToString();
+                    penNew = true;
                 }
 
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.ToString());
+                    Console.WriteLine("I got an exception in the Pen thread" + e.ToString());
                 }
             }
         }
@@ -313,10 +468,11 @@ namespace Sensorhub
                     Console.WriteLine("This is the message you received " +
                                                  returnData.ToString());
                     myoString = returnData.ToString();
+                    myoNew = true;
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.ToString());
+                    Console.WriteLine("I got an exception in the Myo thread" + e.ToString());
                 }
             }
         }
