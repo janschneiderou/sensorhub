@@ -57,9 +57,10 @@ namespace Sensorhub
         int testPort = 11003;
 
         //strings for the files of the different applications
-        string penStringFile = "PenCalligraphyWpf";
+        string penStringFilePath = "D:\\Programming repository\\PenCalligraphyWPF\\PenCalligraphyWpf\\PenCalligraphyWpf\\bin\\Debug\\PenCalligraphyWpf.exe";
         string testStringFile = "socketTest";
         string myoStringFile = "MyoTest";
+        string penStringFile = "PenCalligraphyWpf";
 
         //strings for the different applications
         string penString = "";
@@ -124,12 +125,12 @@ namespace Sensorhub
                     if (firstTime==true)
                     {
                         
-                        storingString = storingString + "{ \"Timestamp\":\"" + now + "\",\"Sensors\":[{";
+                        storingString = storingString + "{ \"Timestamp\":\"" + now + "\",\"Sensors\":[";
                         firstTime = false;
                     }
                     else
                     {
-                        storingString = storingString + ",{ \"Timestamp\":\"" + now + "\",\"Sensors\":[{";
+                        storingString = storingString + ",{ \"Timestamp\":\"" + now + "\",\"Sensors\":[";
                     }
                     
                     if (penNew==true)
@@ -160,7 +161,7 @@ namespace Sensorhub
                         storingString = storingString + testString;
                         testNew = false;
                     }
-                    storingString = storingString + " }]}"+ Environment.NewLine;
+                    storingString = storingString + " ]}"+ Environment.NewLine;
                         
            
                         
@@ -186,7 +187,7 @@ namespace Sensorhub
                 closeMyo();
                 saveString();
               //  googleCloudSave();
-              //  googleCloudBucket();
+                googleCloudBucket();
 
             }
             catch (Exception xx)
@@ -280,9 +281,9 @@ namespace Sensorhub
         private void saveString()
         {
             double now = DateTime.Now.TimeOfDay.TotalMilliseconds;
-            fileName = now + ".txt";
-            startString = "{\"idSensorFile\":\"" + fileName + "\",\"SensorUpdates\":[{"+Environment.NewLine;
-            endString = Environment.NewLine+"}]}";
+            fileName = now + ".json";
+            startString = "{\"idSensorFile\":\"" + fileName + "\",\"SensorUpdates\":["+Environment.NewLine;
+            endString = Environment.NewLine+"]}";
             storingString = startString + storingString + endString;
 
 
@@ -316,7 +317,7 @@ namespace Sensorhub
             try
             {
                 string path = System.IO.Directory.GetCurrentDirectory();
-                System.Diagnostics.Process.Start(path + "/runables/"+penStringFile+".exe");
+                System.Diagnostics.Process.Start(penStringFilePath);
                 penRunning = true;
                 penThread = new Thread(new ThreadStart(penRunningThread));
                 penThread.Start();
