@@ -35,6 +35,10 @@ namespace Sensorhub
         UdpClient receivingUdpClientPen;
         UdpClient receivingUdpClientTest;
 
+        TcpListener myListener;
+        int tcpPort = 12001;
+
+
         Thread storingThread;
         bool isStoring = false;
 
@@ -45,6 +49,8 @@ namespace Sensorhub
         bool myoRunning = false;
         bool penRunning = false;
         bool testRunning = false;
+
+        Thread tcpListenerThread;
 
         bool penNew = false;
         bool myoNew=false;
@@ -77,12 +83,73 @@ namespace Sensorhub
         string startString = "";
         string endString = "";
 
+        string actor = "";
+        string verb = "";
+        string object1 = "";
+
         public MainWindow()
         {
             InitializeComponent();
             receivingUdpClientMyo = new UdpClient(myoPort);
             receivingUdpClientPen = new UdpClient(penPort); ;
             receivingUdpClientTest = new UdpClient(testPort); ;
+ 
+
+        }
+        private void Window_Initialized(object sender, EventArgs e)
+        {
+            tcpListenerThread = new Thread(new ThreadStart(tcpListenersStart));
+            tcpListenerThread.Start();
+        }
+
+        private void tcpListenersStart()
+        {
+            myListener = new TcpListener(IPAddress.Any, tcpPort);
+            myListener.Start();
+            while (true)
+            {
+                Console.WriteLine("The server is running at port 12001...");
+                Console.WriteLine("The local End point is  :" +
+                                  myListener.LocalEndpoint);
+                Console.WriteLine("Waiting for a connection.....");
+
+                Socket s = myListener.AcceptSocket();
+                Console.WriteLine("Connection accepted from " + s.RemoteEndPoint);
+
+                byte[] b = new byte[100];
+                
+                int k = s.Receive(b);
+                Console.WriteLine("Recieved...");
+                string receivedString = System.Text.Encoding.UTF8.GetString(b);
+               
+                
+                for (int i = 0; i < k; i++)
+                {
+                    Console.Write(Convert.ToChar(b[i]));
+                }
+                if(receivedString.Contains("start"))
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        Start_Click(null, null);
+                    });
+
+                    
+                }
+                if (receivedString.Contains("stop"))
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        Stop_Click(null, null);
+                    });
+                    
+                }
+
+                ASCIIEncoding asen = new ASCIIEncoding();
+                s.Send(asen.GetBytes("The string was recieved by the server."));
+                Console.WriteLine("\nSent Acknowledgement");
+            }
+             
         }
 
         private void Start_Click(object sender, RoutedEventArgs e)
@@ -282,7 +349,8 @@ namespace Sensorhub
         {
             double now = DateTime.Now.TimeOfDay.TotalMilliseconds;
             fileName = now + ".json";
-            startString = "{\"idSensorFile\":\"" + fileName + "\",\"SensorUpdates\":["+Environment.NewLine;
+            startString = "{\"idSensorFile\":\"" + fileName + "\",  \"actor\":\""+actor+"\",\"verb\":\""+verb+
+                "\",\"object\":\""+object1+"\",\"SensorUpdates\":[" + Environment.NewLine;
             endString = Environment.NewLine+"]}";
             storingString = startString + storingString + endString;
 
@@ -478,5 +546,7 @@ namespace Sensorhub
             }
         }
         #endregion
+
+  
     }
 }
