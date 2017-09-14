@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<myApps>
+  <HololensIP>127.0.0.1</HololensIP>
+  <HololensPort>13001</HololensPort>
+  <Application>
+    <Name>socketTest</Name>
+    <Path>C:\Users\jan\Source\Repos\SensorHub\Sensorhub\Sensorhub\bin\Debug\runables\socketTest.exe</Path>
+    <Port>11003</Port>
+  </Application>
+</myApps>

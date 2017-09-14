@@ -13,6 +13,7 @@
         <CheckBox x:Name="myoCheckBox" Content="Myo" HorizontalAlignment="Left" Margin="77,133,0,0" VerticalAlignment="Top" Height="18" Width="106"/>
         <CheckBox x:Name="penCheckBox" Content="Pen" HorizontalAlignment="Left" Margin="77,156,0,0" VerticalAlignment="Top"/>
         <CheckBox x:Name="testCheckBox" Content="test App" HorizontalAlignment="Left" Margin="77,176,0,0" VerticalAlignment="Top"/>
+        <CheckBox x:Name="SendToHololensCheckBox" Content="Send To Hololens" HorizontalAlignment="Left" Margin="414,68,0,0" VerticalAlignment="Top" IsChecked="True" Click="SendToHololensCheckBox_Checked"/>
 
 
     </Grid>
