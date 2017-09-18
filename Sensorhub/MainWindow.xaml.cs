@@ -332,7 +332,7 @@ namespace Sensorhub
             {
                 foreach (ApplicationClass app in myApps)
                 {
-                    if (app.applicationName.Equals("PenCaligraphyWPF"))
+                    if (app.applicationName.Equals("PenCalligraphyWpf"))
                     {
                         app.isEnabled = true;
                         myEnabledApps.Add(app);
@@ -536,7 +536,7 @@ namespace Sensorhub
         {
             try
             {
-                int startIndex = text.IndexOf("<HololensIP>") + 13;
+                int startIndex = text.IndexOf("<HololensIP>") + 12;
                 int endIndex = text.IndexOf("</HololensIP>");
                 string holoIP = text.Substring(startIndex, endIndex - startIndex);
                 HololensIP = IPAddress.Parse(holoIP);
@@ -559,16 +559,28 @@ namespace Sensorhub
         {
 
             byte[] send_buffer = Encoding.ASCII.GetBytes(storingStringTemp);
+            SocketAsyncEventArgs socketEventArg = new SocketAsyncEventArgs();
+            socketEventArg.RemoteEndPoint = sending_end_point_to_Hololens;
 
             try
             {
-                sendingToHololensSocket.SendTo(send_buffer, sending_end_point_to_Hololens);
+                socketEventArg.SetBuffer(send_buffer, 0, send_buffer.Length);
+                sendingToHololensSocket.SendToAsync(socketEventArg);
+              
             }
-            catch (Exception send_exception)
+            catch
             {
-
-                Console.WriteLine(" Exception {0}", send_exception.Message);
+                Console.WriteLine("error sending message");
             }
+            //try
+            //{
+            //    sendingToHololensSocket.SendTo(send_buffer, sending_end_point_to_Hololens);
+            //}
+            //catch (Exception send_exception)
+            //{
+
+            //    Console.WriteLine(" Exception {0}", send_exception.Message);
+            //}
         }
 
         private void SendToHololensCheckBox_Checked(object sender, RoutedEventArgs e)

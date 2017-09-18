@@ -1,10 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <myApps>
-  <HololensIP>127.0.0.1</HololensIP>
+  <HololensIP>192.168.0.194</HololensIP>
   <HololensPort>13001</HololensPort>
+
   <Application>
-    <Name>socketTest</Name>
-    <Path>C:\Users\jan\Source\Repos\SensorHub\Sensorhub\Sensorhub\bin\Debug\runables\socketTest.exe</Path>
-    <Port>11003</Port>
+    <Name>PenCalligraphyWpf</Name>
+    <Path>C:\Users\bib_l\Documents\Programming Repository\PenCalligraphyWPF\PenCalligraphyWpf\PenCalligraphyWpf\bin\Debug\PenCalligraphyWpf.exe</Path>
+    <Port>11001</Port>
+  </Application>
+
+  <Application>
+    <Name>MyoTest</Name>
+    <Path>C:\Users\bib_l\Documents\Programming Repository\MyoStandalone\MyoTest\MyoTest\bin\Debug\MyoTest.exe</Path>
+    <Port>11002</Port>
   </Application>
 </myApps>
