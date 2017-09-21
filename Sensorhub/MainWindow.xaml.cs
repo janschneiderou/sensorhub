@@ -344,7 +344,7 @@ namespace Sensorhub
             {
                 foreach (ApplicationClass app in myApps)
                 {
-                    if (app.applicationName.Equals("socketTest"))
+                    if (app.applicationName.Equals("socketTest")|| app.applicationName.Equals("LeapMotionTest"))
                     {
                         app.isEnabled = true;
                         myEnabledApps.Add(app);

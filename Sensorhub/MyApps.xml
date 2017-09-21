@@ -14,4 +14,10 @@
     <Path>C:\Users\bib_l\Documents\Programming Repository\MyoStandalone\MyoTest\MyoTest\bin\Debug\MyoTest.exe</Path>
     <Port>11002</Port>
   </Application>
+
+ <Application>
+    <Name>LeapMotionTest</Name>
+    <Path>C:\Users\jan\Source\Repos\clientServer\udpclientserversample\LeapMotionTest\LeapMotionTest\bin\Debug\LeapMotionTest.exe</Path>
+    <Port>11004</Port>
+  </Application>
 </myApps>
