@@ -254,7 +254,7 @@ namespace Sensorhub
            
                         
                 //}
-                Thread.Sleep(17);
+               // Thread.Sleep(17);
                 
             }
         }

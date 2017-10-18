@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <myApps>
-  <HololensIP>192.168.0.194</HololensIP>
+  <HololensIP>192.168.0.199</HololensIP>
   <HololensPort>13001</HololensPort>
 
   <Application>
@@ -17,7 +17,7 @@
 
  <Application>
     <Name>LeapMotionTest</Name>
-    <Path>C:\Users\jan\Source\Repos\clientServer\udpclientserversample\LeapMotionTest\LeapMotionTest\bin\Debug\LeapMotionTest.exe</Path>
+    <Path>C:\Users\bib_l\Documents\Programming Repository\udpclientserversample\LeapMotionTest\LeapMotionTest\bin\Debug\LeapMotionTest.exe</Path>
     <Port>11004</Port>
   </Application>
 </myApps>
