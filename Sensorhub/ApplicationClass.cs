@@ -20,13 +20,14 @@ namespace Sensorhub
         string filePath;
         public string applicationName;
         string currentString;
+        MainWindow Parent;
 
-        public ApplicationClass(int listeningPort, string filePath, string applicationName)
+        public ApplicationClass(int listeningPort, string filePath, string applicationName, MainWindow Parent)
         {
             this.listeningPort = listeningPort;
             this.filePath = filePath;
             this.applicationName = applicationName;
-
+            this.Parent = Parent;
             receivingUdp= new UdpClient(this.listeningPort);
         }
 
@@ -45,7 +46,22 @@ namespace Sensorhub
             try
             {
                 string path = System.IO.Directory.GetCurrentDirectory();
-                System.Diagnostics.Process.Start(filePath);
+                try
+                {
+                    if(filePath.Equals("remoteApp"))
+                    {
+                        Console.WriteLine("application might be running remotely so thread and listener started");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Process.Start(filePath);
+                    }
+                    
+                }
+                catch
+                {
+                    Console.WriteLine("application might be running remotely so thread and listener started");
+                }
                 isRunning = true;
                 myRunningThread = new Thread(new ThreadStart(myThreadFunction));
                 myRunningThread.Start();
@@ -61,13 +77,20 @@ namespace Sensorhub
             try
             {
                 myRunningThread.Abort();
+                if(filePath.Equals("remoteApp"))
+                {
 
-                System.Diagnostics.Process[] pp1 = System.Diagnostics.Process.GetProcessesByName(applicationName);
-                pp1[0].CloseMainWindow();
+                }
+                else
+                {
+                    System.Diagnostics.Process[] pp1 = System.Diagnostics.Process.GetProcessesByName(applicationName);
+                    pp1[0].CloseMainWindow();
+                }
+                
             }
             catch (Exception xx)
             {
-                Console.WriteLine("I got an exception after closing Pen" + xx);
+                Console.WriteLine("I got an exception after closing App" + xx);
             }
             isRunning = false;
         }
@@ -93,6 +116,10 @@ namespace Sensorhub
 
                     currentString = returnData.ToString();
                     newPackage = true;
+                    if(Parent.directPush==true)
+                    {
+                        Parent.storeString(currentString);
+                    }
                 }
 
                 catch (Exception e)

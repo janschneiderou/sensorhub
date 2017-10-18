@@ -42,50 +42,22 @@ namespace Sensorhub
         IPEndPoint sending_end_point_to_Hololens;
         int sendingToHololensPort;
         IPAddress HololensIP;
-        public bool sendToHololensFlag = true;
+        public  bool sendToHololensFlag = true;
 
-        //sockets that receive messages from the different applications
-        //UdpClient receivingUdpClientMyo;
-        //UdpClient receivingUdpClientPen;
-        //UdpClient receivingUdpClientTest;
+   
 
-
+        public  bool directPush = false;
         Thread storingThread;
         bool isStoring = false;
+        bool startedWithTCP = false;
 
-        //Threads that receive messages from the different applications
-        //Thread testThread;
-        //Thread penThread;
-        //Thread myoThread;
-        //bool myoRunning = false;
-        //bool penRunning = false;
-        //bool testRunning = false;
 
         Thread tcpListenerThread;
 
-        //bool penNew = false;
-        //bool myoNew=false;
-        //bool testNew = false;
+        
         bool firstTime = true;
 
-        //ports from the different applications
-        //int penPort = 11001;
-        //int myoPort = 11002;
-        //int testPort = 11003;
 
-        //strings for the files of the different applications
-        //string penStringFilePath = "D:\\Programming repository\\PenCalligraphyWPF\\PenCalligraphyWpf\\PenCalligraphyWpf\\bin\\Debug\\PenCalligraphyWpf.exe";
-        //string testStringFile = "socketTest";
-        //string myoStringFile = "MyoTest";
-        //string penStringFile = "PenCalligraphyWpf";
-
-        //strings for the different applications
-        //string penString = "";
-        //string myoString = "";
-        //string testString = "";
-        //string penStringTemp = "";
-        //string myoStringTemp = "";
-        //string testStringTemp = "";
 
         string fileName = "";
 
@@ -102,6 +74,7 @@ namespace Sensorhub
         {
             InitializeComponent();
             myApps = new List<ApplicationClass>();
+            myEnabledApps = new List<ApplicationClass>();
             sendingToHololensSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             readAppsFile();
             
@@ -138,7 +111,7 @@ namespace Sensorhub
                     int listeningPort = int.Parse(listeningPortString);
                     text = text.Substring(text.IndexOf("</Application>") + 3);
 
-                    ApplicationClass app = new ApplicationClass(listeningPort, filePath, applicationName);
+                    ApplicationClass app = new ApplicationClass(listeningPort, filePath, applicationName, this);
                     myApps.Add(app);
                     currentIndex++;
                 }
@@ -158,8 +131,30 @@ namespace Sensorhub
             tcpListenerThread = new Thread(new ThreadStart(tcpListenersStart));
             tcpListenerThread.Start();
         }
+        //used for directPushed Method is called from applicationClass
+        public  void storeString(string currentString)
+        {
+            double now = DateTime.Now.TimeOfDay.TotalMilliseconds;
+            string storingStringTemp = "";
+            if (firstTime == true)
+            {
 
-   
+                storingStringTemp = storingStringTemp + "{ \"Timestamp\":\"" + now + "\",\"Sensors\":[";
+                firstTime = false;
+            }
+            else
+            {
+                storingStringTemp = storingStringTemp + ",{ \"Timestamp\":\"" + now + "\",\"Sensors\":[";
+            }
+            storingStringTemp = storingStringTemp + currentString;
+            storingStringTemp = storingStringTemp + " ]}" + Environment.NewLine;
+
+            if (sendToHololensFlag == true)
+            {
+                sendToHololens(storingStringTemp);
+            }
+            storingString = storingString + storingStringTemp;
+        }
 
         private void storingRunningThread()
         {
@@ -285,31 +280,27 @@ namespace Sensorhub
         private void Start_Click(object sender, RoutedEventArgs e)
         {
 
-            //if (myoCheckBox.IsChecked == true)
-            //{
-            //    startMyo();
-            //}
-            //if (penCheckBox.IsChecked == true)
-            //{
-            //    startPen();
-            //}
-            //if (testCheckBox.IsChecked==true)
-            //{
-            //    startTest();
-            //}
 
             //new stuff with configFile
-
-            setEnabledApps();
-
+            if(startedWithTCP==false)
+            {
+                setEnabledApps();
+            }
+            startedWithTCP = false;
+            firstTime = true;
             foreach (ApplicationClass app in myEnabledApps)
             {
                 app.startApp();
             }
-            startStoring();
+            if(directPush==false)
+            {
+                startStoring();
+            }
+            
 
         }
 
+        // This method is used only for the button Click Start if the start comes from the TCP this method is ignored
         //TODO Change the name of the strings according to the name of the actual applications. 
         // Right now it uses checkboxes to see if sensor would be used for the recording, this might change
         private void setEnabledApps()
@@ -366,23 +357,18 @@ namespace Sensorhub
         {
             try
             {
-                //  storingThread.Abort();
+
 
 
                 isStoring = false;
-                //myoRunning = false;
-                //penRunning = false;
-                //testRunning = false;
+
                 foreach (ApplicationClass app in myEnabledApps)
                 {
                     app.closeApp();
                 }
 
-                //closeTest();
-                //closePen();
-                //closeMyo();
                 saveString();
-                //  googleCloudSave();
+  
                   googleCloudBucket();
 
             }
@@ -421,19 +407,30 @@ namespace Sensorhub
                 }
                 if (receivedString.Contains("start"))
                 {
-                    Dispatcher.Invoke(() =>
+                    if(isStoring==false)
                     {
-                        Start_Click(null, null);
-                    });
+                        myEnabledApps.Clear();
+                        getParametersFromTCPString(receivedString);
+                       
+                        Dispatcher.Invoke(() =>
+                        {
+                            Start_Click(null, null);
+                        });
+                    }
+                    
 
 
                 }
-                if (receivedString.Contains("stop"))
+                else if (receivedString.Contains("stop"))
                 {
-                    Dispatcher.Invoke(() =>
+                    if(isStoring==true)
                     {
-                        Stop_Click(null, null);
-                    });
+                        Dispatcher.Invoke(() =>
+                        {
+                            Stop_Click(null, null);
+                        });
+                    }
+                    
 
                 }
 
@@ -442,6 +439,105 @@ namespace Sensorhub
                 Console.WriteLine("\nSent Acknowledgement");
             }
 
+        }
+        /* 
+         * the string to start a recording should be somethink like:
+         * start actor=Fridolin; verb=writes; object=test; directPush=true; apps=app1;app2;app3; 
+         * where app1 app2 app3 are the apps running the sensors that will be used for the recording. 
+         * */
+        private void getParametersFromTCPString(string receivedString)
+        {
+            int start;
+            int length=0;
+
+            //Parse actor
+            start = receivedString.IndexOf("actor=");
+            if(start>-1)
+            {
+                start = start + 6;
+                length = receivedString.IndexOf(";", start) - start;
+            }
+           
+            if(start>-1 && length>0)
+            {
+                actor = receivedString.Substring(start, length);
+                length = 0;
+            }
+
+
+            // Parse verb
+            start = receivedString.IndexOf("verb=") ;
+            if (start > -1)
+            {
+                start = start + 5;
+                length = receivedString.IndexOf(";", start) - start;
+            }
+            
+            if (start > -1 && length > 0)
+            {
+                verb = receivedString.Substring(start, length);
+                length = 0;
+            }
+
+            // Parse object
+            start = receivedString.IndexOf("object=");
+            if (start > -1)
+            {
+                start = start + 7;
+                length = receivedString.IndexOf(";", start) - start;
+            }
+            
+            if (start > -1 && length > 0)
+            {
+                object1 = receivedString.Substring(start, length);
+                length = 0;
+            }
+
+
+            // Parse directPush
+            start = receivedString.IndexOf("directPush=");
+            if (start > -1)
+            {
+                start = start + 11;
+                length = receivedString.IndexOf(";", start) - start;
+            }
+
+            if (start > -1 && length > 0)
+            {
+                string dP = receivedString.Substring(start, length);
+                if(dP.Equals("true"))
+                {
+                    directPush = true;
+                }
+                length = 0;
+            }
+
+
+            start = receivedString.IndexOf("apps=") + 5;
+            string appStrings = receivedString.Substring(start);
+
+            while (appStrings.IndexOf(";") >= 0)
+            {
+                length = appStrings.IndexOf(";");
+                enableApp(appStrings.Substring(0,length));
+                appStrings = appStrings.Substring(length+1);
+            }
+          
+            startedWithTCP = true;
+
+        }
+
+        private void enableApp(string v)
+        {
+            foreach(ApplicationClass app in myApps)
+            {
+                if(v.Equals(app.applicationName))
+                {
+                    app.isEnabled = true;
+                    myEnabledApps.Add(app);
+                    break;
+                }
+            }
         }
 
         #endregion
@@ -649,7 +745,7 @@ namespace Sensorhub
         //}
         #endregion
 
-
+        //This might go away!!
         #region closingApps
         //private void closeMyo()
         //{
@@ -697,6 +793,7 @@ namespace Sensorhub
         //}
         #endregion
 
+        //This might go away!!
         #region runningthreads from apps
 
         //private void testRunningThread()
