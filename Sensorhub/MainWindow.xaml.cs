@@ -66,6 +66,7 @@ namespace Sensorhub
         string startString = "";
         string endString = "";
 
+        string XAPI = "";
         string actor = "";
         string verb = "";
         string object1 = "";
@@ -443,6 +444,8 @@ namespace Sensorhub
         /* 
          * the string to start a recording should be somethink like:
          * start actor=Fridolin; verb=writes; object=test; directPush=true; apps=app1;app2;app3; 
+         * or 
+         * start <XAPI>actor=Fridolin; verb=writes; object=test; </XAPI> directPush=true; apps=app1;app2;app3; 
          * where app1 app2 app3 are the apps running the sensors that will be used for the recording. 
          * */
         private void getParametersFromTCPString(string receivedString)
@@ -450,6 +453,18 @@ namespace Sensorhub
             int start;
             int length=0;
 
+            //Parse XAPI
+            start= receivedString.IndexOf("<XAPI>");
+            if(start > -1)
+            {
+                start = start + 6;
+                length = receivedString.IndexOf("</XAPI>", start) - start;
+            }
+            if (start > -1 && length > 0)
+            {
+                XAPI = receivedString.Substring(start, length);
+                length = 0;
+            }
             //Parse actor
             start = receivedString.IndexOf("actor=");
             if(start>-1)
