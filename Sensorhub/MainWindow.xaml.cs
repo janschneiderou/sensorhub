@@ -78,7 +78,7 @@ namespace Sensorhub
             myEnabledApps = new List<ApplicationClass>();
             sendingToHololensSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             readAppsFile();
-            
+           
             //receivingUdpClientMyo = new UdpClient(myoPort);
             //receivingUdpClientPen = new UdpClient(penPort); ;
          //   receivingUdpClientTest = new UdpClient(testPort); ;
@@ -135,17 +135,21 @@ namespace Sensorhub
         //used for directPushed Method is called from applicationClass
         public  void storeString(string currentString)
         {
-            double now = DateTime.Now.TimeOfDay.TotalMilliseconds;
+            DateTime now = DateTime.Now;
+
+            string nowStringX = now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+ 
+            
             string storingStringTemp = "";
             if (firstTime == true)
             {
 
-                storingStringTemp = storingStringTemp + "{ \"Timestamp\":\"" + now + "\",\"Sensors\":[";
+                storingStringTemp = storingStringTemp + "{ \"Timestamp\":\"" + nowStringX + "\",\"Sensors\":[";
                 firstTime = false;
             }
             else
             {
-                storingStringTemp = storingStringTemp + ",{ \"Timestamp\":\"" + now + "\",\"Sensors\":[";
+                storingStringTemp = storingStringTemp + ",{ \"Timestamp\":\"" + nowStringX + "\",\"Sensors\":[";
             }
             storingStringTemp = storingStringTemp + currentString;
             storingStringTemp = storingStringTemp + " ]}" + Environment.NewLine;
@@ -172,17 +176,19 @@ namespace Sensorhub
                 }
                 if(newMessages==true)
                 {
-                    double now = DateTime.Now.TimeOfDay.TotalMilliseconds;
+                    DateTime now = DateTime.Now;
+
+                    string nowStringX = now.ToString("yyyy-MM-dd HH:mm:ss.fff");
                     bool thereIsSomething = false;
                     if (firstTime == true)
                     {
 
-                        storingStringTemp = storingStringTemp + "{ \"Timestamp\":\"" + now + "\",\"Sensors\":[";
+                        storingStringTemp = storingStringTemp + "{ \"Timestamp\":\"" + nowStringX + "\",\"Sensors\":[";
                         firstTime = false;
                     }
                     else
                     {
-                        storingStringTemp = storingStringTemp + ",{ \"Timestamp\":\"" + now + "\",\"Sensors\":[";
+                        storingStringTemp = storingStringTemp + ",{ \"Timestamp\":\"" + nowStringX + "\",\"Sensors\":[";
                     }
                     foreach(ApplicationClass app in myApps)
                     {
