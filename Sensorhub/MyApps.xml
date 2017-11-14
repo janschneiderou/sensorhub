@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <myApps>
-  <HololensIP>192.168.0.199</HololensIP>
+  <HololensIP>192.168.0.199</HololensIP><!--IP of device where we want to forward the UDP Packages-->
   <HololensPort>13001</HololensPort>
 
   <Application>
@@ -19,5 +19,11 @@
     <Name>LeapMotionTest</Name>
     <Path>C:\Users\bib_l\Documents\Programming Repository\udpclientserversample\LeapMotionTest\LeapMotionTest\bin\Debug\LeapMotionTest.exe</Path>
     <Port>11004</Port>
+  </Application>
+
+  <Application>
+    <Name>Hololens</Name>
+    <Path>remoteApp</Path>
+    <Port>11005</Port>
   </Application>
 </myApps>

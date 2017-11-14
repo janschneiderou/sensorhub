@@ -71,6 +71,7 @@ namespace Sensorhub
         string verb = "";
         string object1 = "";
 
+        #region initialization
         public MainWindow()
         {
             InitializeComponent();
@@ -85,11 +86,18 @@ namespace Sensorhub
  
 
         }
+        private void Window_Initialized(object sender, EventArgs e)
+        {
+            tcpListenerThread = new Thread(new ThreadStart(tcpListenersStart));
+            tcpListenerThread.Start();
+        }
+        #endregion
 
-        
-
+        #region readConfigurationFile
         private void readAppsFile()
         {
+            
+
             string path = System.IO.Directory.GetCurrentDirectory();
             string text = System.IO.File.ReadAllText(path + "\\MyApps.xml");
             getHololensInfo(text);
@@ -124,14 +132,10 @@ namespace Sensorhub
             
         }
 
-        
+        #endregion
 
 
-        private void Window_Initialized(object sender, EventArgs e)
-        {
-            tcpListenerThread = new Thread(new ThreadStart(tcpListenersStart));
-            tcpListenerThread.Start();
-        }
+        #region creatingtheJSONString
         //used for directPushed Method is called from applicationClass
         public  void storeString(string currentString)
         {
@@ -266,8 +270,7 @@ namespace Sensorhub
             }
         }
 
-        
-
+        //Saves the JSON String to a file
         private void saveString()
         {
             double now = DateTime.Now.TimeOfDay.TotalMilliseconds;
@@ -281,6 +284,10 @@ namespace Sensorhub
             System.IO.File.WriteAllText(fileName, storingString);
 
         }
+
+        #endregion
+
+
 
 
         #region startAndStopRecording

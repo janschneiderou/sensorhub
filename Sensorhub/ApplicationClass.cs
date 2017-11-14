@@ -40,7 +40,7 @@ namespace Sensorhub
             newPackage = false;
             return currentString;
         }
-
+        //Starts application and reader for the UDP thread
         public void startApp()
         {
             try
@@ -72,6 +72,7 @@ namespace Sensorhub
             }
         }
 
+        //closes application
         public void closeApp()
         {
             try
@@ -95,14 +96,16 @@ namespace Sensorhub
             isRunning = false;
         }
 
-
+        /// <summary>
+        /// Thread receiving the UDP packages and forwarding them to the main class
+        /// </summary>
         private void myThreadFunction()
         {
             while (isRunning == true)
             {
                 //Creates an IPEndPoint to record the IP Address and port number of the sender. 
                 // The IPEndPoint will allow you to read datagrams sent from any source.
-                IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, listeningPort);
                 try
                 {
 
