@@ -14,6 +14,7 @@
         <CheckBox x:Name="penCheckBox" Content="Pen" HorizontalAlignment="Left" Margin="77,156,0,0" VerticalAlignment="Top"/>
         <CheckBox x:Name="testCheckBox" Content="test App" HorizontalAlignment="Left" Margin="77,176,0,0" VerticalAlignment="Top"/>
         <CheckBox x:Name="SendToHololensCheckBox" Content="Send To Hololens" HorizontalAlignment="Left" Margin="414,68,0,0" VerticalAlignment="Top" IsChecked="True" Click="SendToHololensCheckBox_Checked"/>
+        <Button x:Name="button" Content="testAuth" HorizontalAlignment="Left" Margin="340,252,0,0" VerticalAlignment="Top" Width="76" Click="button_Click"/>
 
 
     </Grid>

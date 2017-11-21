@@ -590,16 +590,26 @@ namespace Sensorhub
 
         private async void firebaseAuth()
         {
-            var values = new Dictionary<string, string>
-            {
-                { "token", myOAuthToken }
-            };
+            //var values = new Dictionary<string, string>
+            //{
+            //    { "token", myOAuthToken }
+            //};
 
-            var content = new FormUrlEncodedContent(values);
+            //var content = new FormUrlEncodedContent(values);
 
-            var response = await httpClient.PostAsync("https://wekitproject.appspot.com/", content);
+            //var response = await httpClient.PostAsync("https://wekitproject.appspot.com/", content);
 
-            fireBaseToken = await response.Content.ReadAsStringAsync();
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://192.168.0.199:3000/");
+            request.Headers.Add("Authorization", "Bearer " + myOAuthToken);
+           // request.Headers["Bearer"] = myOAuthToken;
+            
+            
+
+            var response1 = request.GetResponse();
+            var response= await request.GetResponseAsync();
+
+            // fireBaseToken = await response.Content.ReadAsStringAsync();
+            int x = 1;
         }
 
         private void googleCloudBucket()
@@ -749,6 +759,9 @@ namespace Sensorhub
                 sendToHololensFlag = false;
             }
         }
+
+
+
 
         #endregion
 
@@ -939,8 +952,10 @@ namespace Sensorhub
         //}
         #endregion
 
-
-
-
+        private void button_Click(object sender, RoutedEventArgs e)
+        {
+            myOAuthToken = "Fridolin";
+            firebaseAuth();
+        }
     }
 }
