@@ -22,6 +22,7 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Cloud.Storage.V1;
 using System.IO;
+using System.Net.Http;
 
 namespace Sensorhub
 {
@@ -30,6 +31,8 @@ namespace Sensorhub
     /// </summary>
     public partial class MainWindow : Window
     {
+
+        private static readonly HttpClient httpClient = new HttpClient();
 
         //List of applications
         List<ApplicationClass> myApps;
@@ -44,7 +47,8 @@ namespace Sensorhub
         IPAddress HololensIP;
         public  bool sendToHololensFlag = true;
 
-   
+        string  myOAuthToken;
+        string fireBaseToken;
 
         public  bool directPush = false;
         Thread storingThread;
@@ -419,6 +423,12 @@ namespace Sensorhub
                 {
                     Console.Write(Convert.ToChar(b[i]));
                 }
+                // Token:
+                if(receivedString.Contains("Token"))
+                {
+                    parseToken(receivedString);
+                    firebaseAuth();
+                }
                 if (receivedString.Contains("start"))
                 {
                     if(isStoring==false)
@@ -454,13 +464,19 @@ namespace Sensorhub
             }
 
         }
+        //Token:heregoesthetoken
+        private void parseToken(string receivedString)
+        {
+            myOAuthToken = receivedString.Substring(6);
+        }
+
         /* 
-         * the string to start a recording should be somethink like:
-         * start actor=Fridolin; verb=writes; object=test; directPush=true; apps=app1;app2;app3; 
-         * or 
-         * start <XAPI>actor=Fridolin; verb=writes; object=test; </XAPI> directPush=true; apps=app1;app2;app3; 
-         * where app1 app2 app3 are the apps running the sensors that will be used for the recording. 
-         * */
+* the string to start a recording should be somethink like:
+* start actor=Fridolin; verb=writes; object=test; directPush=true; apps=app1;app2;app3; 
+* or 
+* start <XAPI>actor=Fridolin; verb=writes; object=test; </XAPI> directPush=true; apps=app1;app2;app3; 
+* where app1 app2 app3 are the apps running the sensors that will be used for the recording. 
+* */
         private void getParametersFromTCPString(string receivedString)
         {
             int start;
@@ -571,6 +587,21 @@ namespace Sensorhub
         #endregion
 
         #region SavingToCloud
+
+        private async void firebaseAuth()
+        {
+            var values = new Dictionary<string, string>
+            {
+                { "token", myOAuthToken }
+            };
+
+            var content = new FormUrlEncodedContent(values);
+
+            var response = await httpClient.PostAsync("https://wekitproject.appspot.com/", content);
+
+            fireBaseToken = await response.Content.ReadAsStringAsync();
+        }
+
         private void googleCloudBucket()
         {
             // Your Google Cloud Platform project ID.

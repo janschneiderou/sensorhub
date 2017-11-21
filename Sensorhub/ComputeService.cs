@@ -2,6 +2,7 @@
 
 namespace Sensorhub
 {
+    //this class is not used
     internal class ComputeService
     {
         private BaseClientService.Initializer initializer;
